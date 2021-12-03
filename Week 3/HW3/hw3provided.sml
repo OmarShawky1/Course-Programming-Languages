@@ -86,7 +86,7 @@ fun all_answers f lop =
 				[] => SOME acc
 			|	lop::lop' => (case (f lop) of
 									NONE => NONE
-								|	SOME [x] => all_answers_acc (x::acc) lop');
+								|	SOME x => all_answers_acc (x@acc) lop');
 	in
 		all_answers_acc [] lop
 	end
@@ -119,6 +119,7 @@ val check_pat =
             case p of
                 Variable s => [s]
               | TupleP lop => List.foldl (fn (p, acc) => (patternToVars p) @ acc) [] lop
+			  | ConstructorP (_,p) => patternToVars p
               | _ => []
         
 		fun isDuplicated lov =
@@ -142,9 +143,10 @@ fun match (v, p) =
 									then all_answers match (ListPair.zip(vs, ps))
 									else NONE)
 	|	(Constructor(sv, v), ConstructorP (sp, p)) => (if (sv=sp) then (match (v,p)) else NONE)
+	|   _ => NONE
 
 (* valu -> pattern list -> (string * valu) list option *)
-fun first_match (v, lop) = 
+fun first_match v lop = 
 	SOME (first_answer (fn p => match(v, p)) lop) handle NoAnswer => NONE
 
 (* This solution is working and passing all the tests but refused because he wants me to 
@@ -187,7 +189,7 @@ val test4b_3 = longest_string4 ["A","b2c","CC"] = "b2c"
 val test4b_4 = longest_string4 ["A","bc","CC"] = "CC"
 val test4b_5 = longest_string4 ["A","bc","CCc"] = "CCc"
 
-val test5  = longest_capitalized ["A","bc","C"] = "A"
+val test5   = longest_capitalized ["A","bc","C"] = "A"
 val test5_2 = longest_capitalized ["A","Bc","C"] = "Bc"
 val test5_3 = longest_capitalized ["A","BC","C"] = "BC"
 val test5_4 = longest_capitalized ["A","bcawadw","C"] = "A"
@@ -217,13 +219,18 @@ val test9c_3 = count_some_var ("x", Variable("xA")) = 0
 val test10   = check_pat (Variable("x")) = true
 val test10_2 = check_pat (TupleP [Variable("x"), Variable("y"), Variable("x")]) = false;
 val test10_3 = check_pat (TupleP [Variable("x"), Variable("y"), Variable("z")]) = true;
+val test10_4 = check_pat (ConstructorP ("hi", TupleP[Variable "x",Variable "x"])) = false;
+val test10_5 = check_pat (ConstructorP ("hi",TupleP[Variable "x",ConstructorP ("yo",TupleP[Variable "x",UnitP])])) = false;
 
-val test11 = match (Const(1), UnitP) = NONE
-val test11_2 = match (Tuple [Unit, Const 3, Const 2], TupleP [Variable "1", ConstP 3, Wildcard]) = SOME [("1",Unit)];
-val test11_3 = match (Tuple [Unit, Tuple [Const 3]], TupleP [Variable "1", TupleP [Variable "123"]]) = SOME [("1",Unit),("123",Const 3)];
-val test11_4 = match (Tuple [Unit, Tuple [Const 3, Unit]], TupleP [Variable "1", TupleP [Variable "123", ConstP 3]]) = SOME [("1",Unit),("123",Const 3)];
+val test11   = match (Const(1), UnitP) = NONE
+val test11_2 = match (Tuple [Unit, Const 3, Const 2],      TupleP [Variable "1", ConstP 3, Wildcard]) 
+			 = SOME [("1",Unit)];
+val test11_3 = match (Tuple [Unit, Tuple [Const 3]],       TupleP [Variable "1", TupleP [Variable "123"]]) 
+			 = SOME [("123",Const 3),("1",Unit)];
+val test11_4 = match (Tuple [Unit, Tuple [Const 3, Unit]], TupleP [Variable "1", TupleP [Variable "123", ConstP 3]]) 
+			 = NONE (*Because ConstP 3 and Unit (the very last item in each tuple) produce NONE which is makes the overall NONE*)
 
-val test12 = first_match Unit [UnitP] = SOME []
+val test12   = first_match Unit [UnitP] = SOME []
 val test12_2 = first_match (Const 3) [UnitP, ConstP 3] = SOME [];
 val test12_3 = first_match (Const 3) [UnitP, Variable "f"] = SOME [("f", Const 3)];
 val test12_4 = first_match (Const 3) [UnitP, TupleP[]] = NONE;
