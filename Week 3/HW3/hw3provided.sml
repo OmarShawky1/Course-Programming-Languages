@@ -130,6 +130,8 @@ val check_pat =
         not o isDuplicated o patternToVars 
 		(* TODO: Cannot understand why `not o` works but `not` does not, duplicate returns bool in all 
 		cases and there is no need for piping*)
+                (*I asked this question in Stackoverflow here and still did not
+                * understand, but here is the link anyways: https://stackoverflow.com/questions/70212723/how-to-tell-if-i-need-to-use-piping/70216663#70216663 *)
 	end
 
 (* valu * pattern -> (string * valu) list option *)
