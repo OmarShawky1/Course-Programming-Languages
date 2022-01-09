@@ -6,6 +6,11 @@
 class MyPiece < Piece
   # The constant All_My_Pieces should be declared here
   # class array holding all the pieces and their rotations
+  # The Below code is much concantenated and avoids repetition but the grader will give you zero 
+  # because Ruby 2.3 did not have append method.
+  # All_My_Pieces = All_Pieces.append(rotations([[0, 0], [1, 0], [0, 1], [1, 1], [0,2]]), # first shape
+  #                                    rotations([[0, 0], [-1, 0], [1, 0], [2, 0], [-2, 0]]), # second shape
+  #                                    rotations([[0, 0], [1, 0], [1, 1]])) # third shape
   All_My_Pieces = [[[[0, 0], [1, 0], [0, 1], [1, 1]]],  # square (only needs one)
                   rotations([[0, 0], [-1, 0], [1, 0], [0, -1]]), # T
                   [[[0, 0], [-1, 0], [1, 0], [2, 0]], # long (only needs two)
@@ -17,14 +22,13 @@ class MyPiece < Piece
                   rotations([[0, 0], [1, 0], [0, 1], [1, 1], [0,2]]), # first shape
                   rotations([[0, 0], [-1, 0], [1, 0], [2, 0], [-2, 0]]), # second shape
                   rotations([[0, 0], [1, 0], [1, 1]])] # third shape
-  
   # your enhancements here
   # class method to choose the next piece
   def self.next_piece (board)
     if @cheat
-      board.score -= 100
-      MyPiece.new([[0,0]], board)
+      board.decrease_100_score
       @cheat = false
+      MyPiece.new([[0,0]], board)
     else
       MyPiece.new(All_My_Pieces.sample, board)
     end
@@ -69,20 +73,18 @@ class MyBoard < Board
     @delay = [@delay - 2, 80].max
   end
 
-  # TODO: Implement this function:
-          # 1- If score is less than 100, skip, otherwise, player loses 100 points & a new single box will drop
+
   def cheat
-    if @score < 100
-        puts "Can't cheat now" #Didn't know what to do to make it do nothing
-    else
-      # @score -= 100 ;should be done only when the cheat piece is done
+    if @score >= 100
       next_cheat_piece
     end
   end
+
+  def decrease_100_score
+    @score -= 100
+  end
   
   def next_cheat_piece
-    # @current_block = MyPiece.next_cheat_piece(self)
-    # @current_pos = nil
     MyPiece.next_cheat_piece
   end
 
