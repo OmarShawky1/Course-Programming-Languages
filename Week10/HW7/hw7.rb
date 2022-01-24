@@ -138,7 +138,7 @@ class Point < GeometryValue
     end
   end
   def intersectLine l
-    if real_close(y, m*x+b)
+    if real_close(y, l.m*x+b)
       self
     else
       NoPoints.new
