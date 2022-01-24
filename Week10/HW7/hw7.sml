@@ -11,14 +11,15 @@
                       (shifts added by you)
 *)
 datatype geom_exp = 
-           NoPoints
-	 | Point of real * real (* represents point (x,y) *)
-	 | Line of real * real (* represents line (slope, intercept) *)
-	 | VerticalLine of real (* x value *)
-	 | LineSegment of real * real * real * real (* x1,y1 to x2,y2 *)
-	 | Intersect of geom_exp * geom_exp (* intersection expression *)
-	 | Let of string * geom_exp * geom_exp (* let s = e1 in e2 *)
-	 | Var of string
+		NoPoints
+		| Point of real * real (* represents point (x,y) *)
+		| Line of real * real (* represents line (slope, intercept) *)
+		| VerticalLine of real (* x value *)
+		| LineSegment of real * real * real * real (* x1,y1 to x2,y2 *)
+		| Intersect of geom_exp * geom_exp (* intersection expression *)
+		| Let of string * geom_exp * geom_exp (* let s = e1 in e2 *)
+		| Var of string
+		| Shift of real * real * geom_exp (* Shift(deltaX, deltaY, exp) *)
 (* CHANGE add shifts for expressions of the form Shift(deltaX, deltaY, exp *)
 
 exception BadProgram of string
@@ -58,37 +59,36 @@ fun two_points_to_line (x1,y1,x2,y2) =
 fun intersect (v1,v2) =
     case (v1,v2) of
 	
-       (NoPoints, _) => NoPoints (* 5 cases *)
-     | (_, NoPoints) => NoPoints (* 4 additional cases *)
+      (NoPoints, _) => NoPoints (* 5 cases *)
+    | (_, NoPoints) => NoPoints (* 4 additional cases *)
 
-     | 	(Point p1, Point p2) => if real_close_point p1 p2
-				then v1
-				else NoPoints
+    | (Point p1, Point p2) => if real_close_point p1 p2
+							  then v1
+							  else NoPoints
 
-      | (Point (x,y), Line (m,b)) => if real_close(y, m * x + b)
-				     then v1
-				     else NoPoints
+    | (Point (x,y), Line (m,b)) => if real_close(y, m * x + b)
+				    			   then v1
+				    			   else NoPoints
 
-      | (Point (x1,_), VerticalLine x2) => if real_close(x1,x2)
-					   then v1
-					   else NoPoints
+    | (Point (x1,_), VerticalLine x2) => if real_close(x1,x2)
+					    				 then v1
+					    				 else NoPoints
 
-      | (Point _, LineSegment seg) => intersect(v2,v1)
+    | (Point _, LineSegment seg) => intersect(v2,v1)
 
-      | (Line _, Point _) => intersect(v2,v1)
+    | (Line _, Point _) => intersect(v2,v1)
 
-      | (Line (m1,b1), Line (m2,b2)) =>
-	if real_close(m1,m2) 
-	then (if real_close(b1,b2)
-	      then v1 (* same line *)
-	      else  NoPoints) (* parallel lines do not intersect *)
-	else 
-	    let (* one-point intersection *)
-		val x = (b2 - b1) / (m1 - m2)
-		val y = m1 * x + b1
-	    in
-		Point (x,y)
-	    end
+    | (Line (m1,b1), Line (m2,b2)) => if real_close(m1,m2) 
+									  then (if real_close(b1,b2)
+									  		then v1 (* same line *)
+									  		else  NoPoints) (* parallel lines do not intersect *)
+									  else 
+										   let (* one-point intersection *)
+										   	val x = (b2 - b1) / (m1 - m2)
+										   	val y = m1 * x + b1
+										   in
+										   	Point (x,y)
+										   end
 
       | (Line (m1,b1), VerticalLine x2) => Point(x2, m1 * x2 + b1)
 
@@ -97,10 +97,9 @@ fun intersect (v1,v2) =
       | (VerticalLine _, Point _) => intersect(v2,v1)
       | (VerticalLine _, Line _)  => intersect(v2,v1)
 
-      | (VerticalLine x1, VerticalLine x2) =>
-	if real_close(x1,x2)
-	then v1 (* same line *)
-	else NoPoints (* parallel *)
+      | (VerticalLine x1, VerticalLine x2) => if real_close(x1,x2)
+											  then v1 (* same line *)
+											  else NoPoints (* parallel *)
 
       | (VerticalLine _, LineSegment seg) => intersect(v2,v1)
 
@@ -189,12 +188,20 @@ fun eval_prog (e,env) =
       | Line _   => e
       | VerticalLine _ => e
       | LineSegment _  => e
-      | Var s => 
-	(case List.find (fn (s2,v) => s=s2) env of
-	     NONE => raise BadProgram("var not found: " ^ s)
-	   | SOME (_,v) => v)
+      | Var s => (case List.find (fn (s2,v) => s=s2) env of 
+				  NONE => raise BadProgram("var not found: " ^ s)
+	  | SOME (_,v) => v)
       | Let(s,e1,e2) => eval_prog (e2, ((s, eval_prog(e1,env)) :: env))
       | Intersect(e1,e2) => intersect(eval_prog(e1,env), eval_prog(e2, env))
+	  | Shift (dx, dy, e1) => let val eval_e1 = eval_prog(e1,env)
+							  in 
+							  	case eval_e1 of
+								  NoPoints => eval_e1
+								  | Point (x, y) => Point (x+dx, y+dy)
+								  | Line (m, b) => Line (m, b+dy-m*dx)
+								  | VerticalLine (x) => VerticalLine (x+dx)
+								  | LineSegment (x1, y1, x2, y2) => LineSegment (x1+dx, y1+dy, x2+dx, y2+dy)
+							  end	
 (* CHANGE: Add a case for Shift expressions *)
 
 (* CHANGE: Add function preprocess_prog of type geom_exp -> geom_exp *)
@@ -207,8 +214,18 @@ fun preprocess_prog e =
 	| LineSegment (x1, y1, x2, y2) => if real_close_point (x1, y1) (x2, y2) (*If they are equal*)
 									  then Point (x1, y1) (*Produce a point*)
 									  else if (x1 > x2) (*Otherwise, if the first x is bigger, flip points in the LineSegment*)
-									  		then LineSegment (x2, y2, x1, y1)
-											else e
+									  	   then LineSegment (x2, y2, x1, y1)
+										   else e
 	| Var s => e
-	| Let(s,e1,e2) => e
-	| Intersect(e1,e2) => e
+	| Let (s,e1,e2) => let val preprocessed_e1 = preprocess_prog e1
+                           val preprocessed_e2 = preprocess_prog e2
+                       in Let (s, preprocessed_e1, preprocessed_e2)
+                       end
+    | Intersect (e1,e2) => let val preprocessed_e1 = preprocess_prog e1
+                               val preprocessed_e2 = preprocess_prog e2
+                           in 
+                            Intersect (preprocessed_e1, preprocessed_e2)
+                           end
+	| Shift (dx, dy, e1) => let val preprocessed_e1 = preprocess_prog e1
+							in Shift (dx, dy, preprocessed_e1)
+							end
