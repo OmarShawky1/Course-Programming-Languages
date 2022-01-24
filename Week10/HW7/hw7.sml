@@ -213,7 +213,7 @@ fun preprocess_prog e =
 	| VerticalLine _ => e
 	| LineSegment (x1, y1, x2, y2) => if real_close_point (x1, y1) (x2, y2) (*If they are equal*)
 									  then Point (x1, y1) (*Produce a point*)
-									  else if (x1 > x2) (*Otherwise, if the first x is bigger, flip points in the LineSegment*)
+									  else if (x1 > x2) andalso (y1 > y2) (*Otherwise, if the first x is bigger, flip points in the LineSegment*)
 									  	   then LineSegment (x2, y2, x1, y1)
 										   else e
 	| Var s => e
