@@ -5,7 +5,7 @@ My Solution & TA solutions for:
 2. [Programming Languages Part B]
 3. [Programming Languages Part C]
 
-Other Solutions on Github [doct0rx], [By sefakilic] and  [diversario] \(not all solutions are correct\)
+Other Solutions on Github by [doct0rx], [sefakilic] and [diversario] \(not all solutions are correct\)
 
 [Programming Languages Part A]: <https://www.coursera.org/learn/programming-languages>
 [Programming Languages Part B]: <https://www.coursera.org/learn/programming-languages-part-b>
