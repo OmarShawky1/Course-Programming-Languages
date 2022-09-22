@@ -11,5 +11,5 @@ Other Solutions on Github by [doct0rx], [sefakilic] and [diversario] \(not all s
 [Programming Languages Part B]: <https://www.coursera.org/learn/programming-languages-part-b>
 [Programming Languages Part C]: <https://www.coursera.org/learn/programming-languages-part-c>
 [doct0rx]: <https://github.com/doct0rX/ProgrammingLanguages>
-[By sefakilic]: <https://github.com/sefakilic/coursera-proglang>
+[sefakilic]: <https://github.com/sefakilic/coursera-proglang>
 [diversario]: <https://github.com/diversario/coursera-proglang-003>
