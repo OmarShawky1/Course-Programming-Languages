@@ -29,7 +29,7 @@ Part A Final Quiz.
 Assignment is about Delaying evaluation, Memoization, Macros, thunking and so on, using Racket Dynamic programming language. Assignemnt was about to write a sequence function that takes start, end and step to produce a list (E.g., sequence 3 11 2 gives 3 5 7 9 11). Also write a map function that takes a list of strings and only prints the suffix. Write a stream of steps and much more in the HW assignment.
 
 # Week 7 (HW5)
-Assignment was the hardest as it was supposed to be an interpreter mimic but instead of using symbol tables we replaced variables (keys) with their associated value. We were supposed to know and implement a static interpretec in a dynamically typed language to understand the fundamental differences. The interpreter was for a language called MUPL (Made up programming language) by Prof. Dan.
+Assignment was the hardest as it was supposed to be an interpreter mimic but instead of using symbol tables we replaced variables (keys) with their associated value. We were supposed to know and implement a static interpreter in a dynamically typed language to understand the fundamental differences. The interpreter was for a language called MUPL (Made up programming language) by Prof. Dan.
 
 # Week 8
 Part B Final Quiz.
